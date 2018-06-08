@@ -26,10 +26,24 @@ public class MainActivity extends AppCompatActivity {
 
     private static int RESULT_LOAD_IMAGE = 1;
     String TAG = "Main Activity";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Button b2 = (Button)findViewById(R.id.clear);
+        b2.setOnClickListener(new View.OnClickListener() {
+
+            StringBuilder builder = new StringBuilder();
+            @Override
+            public void onClick(View view) {
+                TextView textView = (TextView)findViewById(R.id.text3);
+                textView.setText("");
+                ImageView imageView = (ImageView)findViewById(R.id.imgView);
+            }
+
+        });
         Button b1 = (Button)findViewById(R.id.load);
         b1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
                     SparseArray<TextBlock> textBlocks = textRecognizer.detect(imageFrame);
 
                     StringBuilder strbd = new StringBuilder();
-
-                    for (int i = 0; i < textBlocks.size(); i++) {
+                    int i;
+                    for ( i = 0; i < textBlocks.size(); i++) {
 
                         TextBlock textBlock = textBlocks.get(textBlocks.keyAt(i));
 
@@ -102,9 +116,9 @@ public class MainActivity extends AppCompatActivity {
                         strbd.append(text);
                         strbd.append("\n");
 
-//                        Toast.makeText(this, text , Toast.LENGTH_SHORT).show();
 
-                    }
+
+                    }if (i==textBlocks.size())Toast.makeText(this, "Completed!" , Toast.LENGTH_SHORT).show();
                     textView.setText(strbd.toString());
                 }
             } catch (FileNotFoundException e) {
