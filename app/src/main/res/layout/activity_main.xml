@@ -1,57 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.bcepnez.gvreader.MainActivity">
 
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-
-
-        <ImageView
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_above="@+id/load"
-            android:id="@+id/imgView"
-            android:layout_centerInParent="true"
-            />
-
-        <TextView
+        <android.support.v7.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/text3"
-            android:text="No text Found"
-            android:textSize="20dp"
-            android:textColor="@color/colorPrimary"/>
+            android:id="@+id/toolbar"
+            android:titleTextColor="@android:color/white"
+            android:background="@android:color/holo_red_light"/>
 
-        <Button
-            android:id="@+id/load"
-            android:layout_width="wrap_content"
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/toolbar"
+            android:id="@+id/imgView"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:id="@+id/text1"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
-            android:layout_marginStart="46dp"
-            android:text="Upload"
-            tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="0dp" />
-
-        <Button
-            android:id="@+id/clear"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="41dp"
-            android:text="Clear"
-            tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="0dp" />
-    </RelativeLayout>
-
-
-
-</android.support.constraint.ConstraintLayout>
+            android:text="           Hello Please Input file to OCR"
+            android:textColor="@color/colorPrimary"
+            android:textSize="20dp" />
+</RelativeLayout>
