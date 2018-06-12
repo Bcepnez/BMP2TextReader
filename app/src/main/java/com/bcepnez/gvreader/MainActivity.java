@@ -1,6 +1,7 @@
 package com.bcepnez.gvreader;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -31,10 +32,13 @@ import com.google.android.gms.vision.text.TextRecognizer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private static int RESULT_LOAD_IMAGE = 1;
+    private static final int CAMERA_REQUEST = 1888;
+    private static final int CROP = 2;
     String TAG = "Main Activity";
     Intent CamIntent,GalIntent,CropIntent;
     Toolbar toolbar;
@@ -71,29 +75,35 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.btn_camera)
+        if (item.getItemId() == R.id.btn_camera){
+            crop = false;
             openCamera();
-        else if (item.getItemId() == R.id.btn_gallery)
+        }
+
+        else if (item.getItemId() == R.id.btn_gallery){
+            crop = false;
             openGallery();
+        }
+
         return true;
     }
 
     private void openGallery() {
-//        crop = false;
         GalIntent = new Intent(Intent.ACTION_PICK,
                 MediaStore.Images.Media.INTERNAL_CONTENT_URI);
 //        startActivityForResult(Intent.createChooser(GalIntent,"Select Image from gallery"),2);
-        if (!crop)startActivityForResult(GalIntent,RESULT_LOAD_IMAGE);
+        crop = false;
+        startActivityForResult(GalIntent,RESULT_LOAD_IMAGE);
     }
 
     private void openCamera() {
         CamIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         file = new File(Environment.getExternalStorageDirectory(),
-                "File"+String.valueOf(System.currentTimeMillis())+".bmp" );
+                "File"+String.valueOf(System.currentTimeMillis())+".jpg" );
         uri = Uri.fromFile(file);
         CamIntent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
-        CamIntent.putExtra("return-data",true);
-        startActivityForResult(CamIntent,0);
+        CamIntent.putExtra("data",true);
+        startActivityForResult(CamIntent,CAMERA_REQUEST);
     }
 
     private void RequestRuntimePermission() {
@@ -105,34 +115,51 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    int chk =0;
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 0 && requestCode == RESULT_OK){
+        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK&&!crop){
             CropImage();
         }
-        else if (requestCode == RESULT_LOAD_IMAGE && !crop) {
+        else if (requestCode == RESULT_LOAD_IMAGE && !crop && resultCode == Activity.RESULT_OK) {
             if(data!= null && data.getData()!=null){
                 uri = data.getData();
-                crop = false;
                 try {
                     bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    if (!crop)CropImage();
-                    OCR();
+                    if (!crop)
+                    {
+                        Toast.makeText(this,"*"+crop+"*",Toast.LENGTH_SHORT).show();
+//                        want to make flag to know cropImage has finish it's work
+//                        now : when i load the image, cropImage has auto work but it  so fast to return
+//                        must check for the image that return
+                        CropImage();
+                        // wait until bitmap has return the value
+                        Toast.makeText(this,"**"+crop+"**",Toast.LENGTH_SHORT).show();
+//                        imageView.setImageBitmap(bitmap);
+                        if (crop == true){
+                            Toast.makeText(this,"***"+crop+"***",Toast.LENGTH_SHORT).show();
+                            OCR();
+                            Toast.makeText(this,"****"+crop+"****",Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
-        else if (requestCode == 1){
+        else if (requestCode == CROP && resultCode == RESULT_OK && !crop){
             if (data!=null && data.getData()!=null){
                 Bundle bundle = data.getExtras();
                 bitmap = bundle.getParcelable("data");
                 crop = true;
-//                imageView.setImageBitmap(bitmap);
                 OCR();
+//                chk =1;
             }
         }
     }
+
 
     private void OCR() {
 
@@ -141,7 +168,8 @@ public class MainActivity extends AppCompatActivity {
 //            imageView.setImageBitmap(bitmap);
 
             // imageBitmap is the Bitmap image you're trying to process for text
-            if (bitmap != null&&crop) {
+        if (bitmap != null&&crop) {
+            String[] list = new String[50];
                 Toast.makeText(this, "load bitmap", Toast.LENGTH_SHORT).show();
                 imageView.setImageBitmap(bitmap);
                 TextRecognizer textRecognizer = new TextRecognizer.Builder(this).build();
@@ -190,13 +218,15 @@ public class MainActivity extends AppCompatActivity {
                     strbd.append(" : ");
                     strbd.append(text);
                     strbd.append("\n");
-
+                    list[i]=text;
                 }
                 if (i == textBlocks.size()){
                     Toast.makeText(this, "Completed!", Toast.LENGTH_SHORT).show();
                     if (strbd.length() != 0) textView.setText(strbd.toString());
                     else textView.setText("No data");
                 }
+//                for (int j = 0 ; j<i; j++)
+//                    Toast.makeText(this,list[j],Toast.LENGTH_SHORT).show();
 
                 crop = false;
             }
@@ -205,7 +235,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void CropImage() {
         try {
-            crop=true;
             CropIntent = new Intent("com.android.camera.action.CROP");
             CropIntent.setDataAndType(uri,"image/*");
             CropIntent.putExtra("crop","true");
@@ -216,9 +245,9 @@ public class MainActivity extends AppCompatActivity {
             CropIntent.putExtra("scaleUpIfNeeded",true);
             CropIntent.putExtra("scaleDownIfNeeded",true);
             CropIntent.putExtra("data",true);
-
+            crop=true;
+            Toast.makeText(this,"****"+chk+"****",Toast.LENGTH_SHORT).show();
             startActivityForResult(CropIntent,1);
-
         }
         catch (ActivityNotFoundException ex){
         }
