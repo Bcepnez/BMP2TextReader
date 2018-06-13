@@ -37,7 +37,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static int RESULT_LOAD_IMAGE = 1;
-    private static final int CAMERA_REQUEST = 1888;
+    private static final int CAMERA_REQUEST = 0;
     private static final int CROP = 2;
     String TAG = "Main Activity";
     Intent CamIntent,GalIntent,CropIntent;
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView imageView;
     Bitmap bitmap;
     final int RequestRuntimePermissionCode = 1;
-    boolean crop;
+    public static boolean crop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +90,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void openGallery() {
         GalIntent = new Intent(Intent.ACTION_PICK,
-                MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 //        startActivityForResult(Intent.createChooser(GalIntent,"Select Image from gallery"),2);
-        crop = false;
         startActivityForResult(GalIntent,RESULT_LOAD_IMAGE);
     }
 
@@ -114,61 +113,44 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.CAMERA},RequestRuntimePermissionCode);
         }
     }
-
-    int chk =0;
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK&&!crop){
+        if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK){
             CropImage();
         }
-        else if (requestCode == RESULT_LOAD_IMAGE && !crop && resultCode == Activity.RESULT_OK) {
+        else if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK) {
             if(data!= null && data.getData()!=null){
                 uri = data.getData();
-                try {
-                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    if (!crop)
-                    {
-                        Toast.makeText(this,"*"+crop+"*",Toast.LENGTH_SHORT).show();
-//                        want to make flag to know cropImage has finish it's work
-//                        now : when i load the image, cropImage has auto work but it  so fast to return
-//                        must check for the image that return
-                        CropImage();
-                        // wait until bitmap has return the value
-                        Toast.makeText(this,"**"+crop+"**",Toast.LENGTH_SHORT).show();
-//                        imageView.setImageBitmap(bitmap);
-                        if (crop == true){
-                            Toast.makeText(this,"***"+crop+"***",Toast.LENGTH_SHORT).show();
-                            OCR();
-                            Toast.makeText(this,"****"+crop+"****",Toast.LENGTH_SHORT).show();
-                        }
-
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (!crop)
+                {
+                    Toast.makeText(this,"*"+crop+"*",Toast.LENGTH_SHORT).show();
+                    CropImage();
+                    // wait until bitmap has return the value
+                    Toast.makeText(this,"**"+crop+"**",Toast.LENGTH_SHORT).show();
                 }
             }
         }
-        else if (requestCode == CROP && resultCode == RESULT_OK && !crop){
+        else if (requestCode == CROP && resultCode == RESULT_OK){
             if (data!=null && data.getData()!=null){
                 Bundle bundle = data.getExtras();
+                Toast.makeText(this,"before OCR : "+bundle.getParcelable("data"),Toast.LENGTH_SHORT).show();
+                //it's got null value
                 bitmap = bundle.getParcelable("data");
+                Toast.makeText(this,"value of bitmap before OCR : "+bitmap,Toast.LENGTH_SHORT).show();
                 crop = true;
                 OCR();
-//                chk =1;
             }
         }
     }
 
 
     private void OCR() {
-
 //            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
 //            imageView = (ImageView) findViewById(R.id.imgView);
 //            imageView.setImageBitmap(bitmap);
 
             // imageBitmap is the Bitmap image you're trying to process for text
-        if (bitmap != null&&crop) {
+        if (crop&&bitmap!=null) {
             String[] list = new String[50];
                 Toast.makeText(this, "load bitmap", Toast.LENGTH_SHORT).show();
                 imageView.setImageBitmap(bitmap);
@@ -227,30 +209,31 @@ public class MainActivity extends AppCompatActivity {
                 }
 //                for (int j = 0 ; j<i; j++)
 //                    Toast.makeText(this,list[j],Toast.LENGTH_SHORT).show();
-
                 crop = false;
             }
 
+            else {
+            Toast.makeText(this,""+bitmap,Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"----"+crop+"----",Toast.LENGTH_SHORT).show();
+//            imageView.setImageBitmap(bitmap);
+        }
     }
 
     private void CropImage() {
         try {
             CropIntent = new Intent("com.android.camera.action.CROP");
-            CropIntent.setDataAndType(uri,"image/*");
-            CropIntent.putExtra("crop","true");
-//            CropIntent.putExtra("OutputX",180);
-//            CropIntent.putExtra("OutputY",180);
-            CropIntent.putExtra("aspectX",7);
-            CropIntent.putExtra("aspectY",1);
-            CropIntent.putExtra("scaleUpIfNeeded",true);
-            CropIntent.putExtra("scaleDownIfNeeded",true);
-            CropIntent.putExtra("data",true);
-            crop=true;
-            Toast.makeText(this,"****"+chk+"****",Toast.LENGTH_SHORT).show();
-            startActivityForResult(CropIntent,1);
+            CropIntent.setDataAndType(uri, "image/*");
+            CropIntent.putExtra("crop", "true");
+            CropIntent.putExtra("aspectX", 7);
+            CropIntent.putExtra("aspectY", 1);
+            CropIntent.putExtra("scaleUpIfNeeded", true);
+            CropIntent.putExtra("scaleDownIfNeeded", true);
+            CropIntent.putExtra("return-data", true);
+            startActivityForResult(CropIntent, CROP);
+
+        } catch (ActivityNotFoundException ex) {
         }
-        catch (ActivityNotFoundException ex){
-        }
+
     }
 
     @Override
