@@ -42,14 +42,12 @@ public class MainActivity extends AppCompatActivity {
     String TAG = "Main Activity";
     Intent CamIntent,GalIntent,CropIntent;
     Toolbar toolbar;
-    DisplayMetrics displayMetrics;
-    int width,height;
     File file;
     Uri uri;
     ImageView imageView;
     Bitmap bitmap;
     final int RequestRuntimePermissionCode = 1;
-    boolean crop;
+    public static boolean crop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         crop = false;
         imageView = (ImageView)findViewById(R.id.imgView);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Crop Image");
+        toolbar.setTitle("Image to Text Converter");
         setSupportActionBar(toolbar);
         int camPermission = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA);
         if (camPermission == PackageManager.PERMISSION_DENIED){
@@ -115,32 +113,17 @@ public class MainActivity extends AppCompatActivity {
     int chk =0;
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK&&!crop){
-            CropImage();
+        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK){
+            if (!crop){ CropImage(); }
+            if (crop){ OCR(); }
         }
         else if (requestCode == RESULT_LOAD_IMAGE && !crop && resultCode == Activity.RESULT_OK) {
             if(data!= null && data.getData()!=null){
                 uri = data.getData();
                 try {
                     bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    if (!crop)
-                    {
-                        Toast.makeText(this,"*"+crop+"*",Toast.LENGTH_SHORT).show();
-//                        want to make flag to know cropImage has finish it's work
-//                        now : when i load the image, cropImage has auto work but it  so fast to return
-//                        must check for the image that return
-                        CropImage();
-                        // wait until bitmap has return the value
-                        Toast.makeText(this,"**"+crop+"**",Toast.LENGTH_SHORT).show();
-//                        imageView.setImageBitmap(bitmap);
-                        if (crop == true){
-                            Toast.makeText(this,"***"+crop+"***",Toast.LENGTH_SHORT).show();
-                            OCR();
-                            Toast.makeText(this,"****"+crop+"****",Toast.LENGTH_SHORT).show();
-                        }
-
-                    }
-
+                    if (!crop){ CropImage(); }
+                    if (crop){ OCR(); }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -156,22 +139,14 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-//                Toast.makeText(this,"value of bitmap before OCR : "+bitmap,Toast.LENGTH_SHORT).show();
                 crop = true;
                 OCR();
-//                chk =1;
             }
         }
     }
 
 
     private void OCR() {
-
-//            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-//            imageView = (ImageView) findViewById(R.id.imgView);
-//            imageView.setImageBitmap(bitmap);
-
-            // imageBitmap is the Bitmap image you're trying to process for text
         if (bitmap != null&&crop) {
             String[] list = new String[50];
                 Toast.makeText(this, "load bitmap", Toast.LENGTH_SHORT).show();
@@ -201,21 +176,11 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 TextView textView = (TextView) findViewById(R.id.text1);
-//
-//
-//
-//
-//                Frame!!!!!!!!!!
-//                Bitmappppppppppp
-//
-//
-//
                 Frame imageFrame = new Frame.Builder().setBitmap(bitmap).build();
                 SparseArray<TextBlock> textBlocks = textRecognizer.detect(imageFrame);
                 StringBuilder strbd = new StringBuilder();
                 int i;
                 for (i = 0; i < textBlocks.size(); i++) {
-//                    Toast.makeText(this, "Hi Yukio", Toast.LENGTH_SHORT).show();
                     TextBlock textBlock = textBlocks.get(textBlocks.keyAt(i));
                     String text = textBlock.getValue();
                     strbd.append(i);
@@ -229,9 +194,6 @@ public class MainActivity extends AppCompatActivity {
                     if (strbd.length() != 0) textView.setText(strbd.toString());
                     else textView.setText("No data");
                 }
-//                for (int j = 0 ; j<i; j++)
-//                    Toast.makeText(this,list[j],Toast.LENGTH_SHORT).show();
-
                 crop = false;
             }
 
@@ -242,8 +204,6 @@ public class MainActivity extends AppCompatActivity {
             CropIntent = new Intent("com.android.camera.action.CROP");
             CropIntent.setDataAndType(uri,"image/*");
             CropIntent.putExtra("crop","true");
-//            CropIntent.putExtra("OutputX",180);
-//            CropIntent.putExtra("OutputY",180);
             CropIntent.putExtra("aspectX",7);
             CropIntent.putExtra("aspectY",1);
             CropIntent.putExtra("scaleUpIfNeeded",true);
