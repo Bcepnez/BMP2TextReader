@@ -75,16 +75,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        crop = false;
         if (item.getItemId() == R.id.btn_camera){
-            crop = false;
             openCamera();
         }
-
         else if (item.getItemId() == R.id.btn_gallery){
-            crop = false;
             openGallery();
         }
-
         return true;
     }
 
@@ -152,7 +149,14 @@ public class MainActivity extends AppCompatActivity {
         else if (requestCode == CROP && resultCode == RESULT_OK && !crop){
             if (data!=null && data.getData()!=null){
                 Bundle bundle = data.getExtras();
-                bitmap = bundle.getParcelable("data");
+//                bitmap = bundle.getParcelable("data");
+                uri = data.getData();
+                try {
+                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+//                Toast.makeText(this,"value of bitmap before OCR : "+bitmap,Toast.LENGTH_SHORT).show();
                 crop = true;
                 OCR();
 //                chk =1;
@@ -247,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
             CropIntent.putExtra("data",true);
             crop=true;
             Toast.makeText(this,"****"+chk+"****",Toast.LENGTH_SHORT).show();
-            startActivityForResult(CropIntent,1);
+            startActivityForResult(CropIntent,CROP);
         }
         catch (ActivityNotFoundException ex){
         }
