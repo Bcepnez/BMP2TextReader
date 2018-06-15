@@ -122,6 +122,7 @@
     <orderEntry type="library" scope="TEST" name="runner-1.0.2" level="project" />
     <orderEntry type="library" scope="TEST" name="jsr305-2.0.1" level="project" />
     <orderEntry type="library" name="support-compat-26.1.0" level="project" />
+    <orderEntry type="library" name="tess-two-9.0.0" level="project" />
     <orderEntry type="library" scope="TEST" name="javax.inject-1" level="project" />
     <orderEntry type="library" name="support-annotations-26.1.0" level="project" />
     <orderEntry type="library" name="support-v4-26.1.0" level="project" />

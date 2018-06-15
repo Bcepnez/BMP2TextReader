@@ -86,8 +86,6 @@ public class MainActivity extends AppCompatActivity {
     private void openGallery() {
         GalIntent = new Intent(Intent.ACTION_PICK,
                 MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-//        startActivityForResult(Intent.createChooser(GalIntent,"Select Image from gallery"),2);
-        crop = false;
         startActivityForResult(GalIntent,RESULT_LOAD_IMAGE);
     }
 
@@ -113,11 +111,11 @@ public class MainActivity extends AppCompatActivity {
     int chk =0;
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK){
+        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK && !crop ){
             if (!crop){ CropImage(); }
             if (crop){ OCR(); }
         }
-        else if (requestCode == RESULT_LOAD_IMAGE && !crop && resultCode == Activity.RESULT_OK) {
+        else if (requestCode == RESULT_LOAD_IMAGE && resultCode == Activity.RESULT_OK  && !crop ) {
             if(data!= null && data.getData()!=null){
                 uri = data.getData();
                 try {
@@ -140,6 +138,9 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 crop = true;
+//                OcrManager manager = new OcrManager();
+//                String str = manager.startRecognizer(bitmap);
+//                Toast.makeText(this,"*|*"+str+"*|*",Toast.LENGTH_SHORT).show();
                 OCR();
             }
         }
@@ -175,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
+
                 TextView textView = (TextView) findViewById(R.id.text1);
                 Frame imageFrame = new Frame.Builder().setBitmap(bitmap).build();
                 SparseArray<TextBlock> textBlocks = textRecognizer.detect(imageFrame);
@@ -195,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
                     else textView.setText("No data");
                 }
                 crop = false;
+                textRecognizer.release();
             }
 
     }
@@ -209,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
             CropIntent.putExtra("scaleUpIfNeeded",true);
             CropIntent.putExtra("scaleDownIfNeeded",true);
             CropIntent.putExtra("data",true);
-            crop=true;
+            crop = true;
             Toast.makeText(this,"****"+chk+"****",Toast.LENGTH_SHORT).show();
             startActivityForResult(CropIntent,CROP);
         }
